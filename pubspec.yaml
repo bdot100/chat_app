@@ -32,6 +32,10 @@ dependencies:
   cached_network_image: ^3.4.1
   path_provider: ^2.0.15
   flutter_cache_manager: ^3.3.1
+  # for picking images from gallery
+  image_picker: ^1.1.2
+  # for accessing firebase storage for uploading file
+  firebase_storage: ^12.4.5
 
 dev_dependencies:
   flutter_test:
