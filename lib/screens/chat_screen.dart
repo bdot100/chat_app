@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/api/apis.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_user.dart';
+import 'package:chat_app/models/message.dart';
+import 'package:chat_app/widgets/message_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +20,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  List<Message> _list = [];
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -27,6 +31,8 @@ class _ChatScreenState extends State<ChatScreen> {
           automaticallyImplyLeading: false,
           flexibleSpace: _appBar(),
         ),
+
+        backgroundColor: Color.fromARGB(255, 234, 248, 255),
 
         // body
         body: Column(
@@ -53,7 +59,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       //         .toList() ??
                       //     [];
 
-                      final _list = ['hiii', 'hello'];
+                      _list.clear();
+                      _list.add(Message(
+                          toId: 'xyz',
+                          msg: "Hii",
+                          read: '12:05 AM',
+                          type: Type.text,
+                          fromId: APIs.user.uid,
+                          sent: '12:00 AM'));
+                      _list.add(Message(
+                          toId: APIs.user.uid,
+                          msg: "Hello",
+                          read: '12:05 AM',
+                          type: Type.text,
+                          fromId: 'xyz',
+                          sent: '12:05 AM'));
 
                       if (_list.isNotEmpty) {
                         return ListView.builder(
@@ -61,7 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             padding: EdgeInsets.only(top: mq.height * .01),
                             physics: BouncingScrollPhysics(),
                             itemBuilder: (context, index) {
-                              return Text('Name: ${_list[index]}');
+                              return MessageCard(message: _list[index]);
                             });
                       } else {
                         return Center(
