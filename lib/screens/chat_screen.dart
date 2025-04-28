@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/api/apis.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,7 +30,53 @@ class _ChatScreenState extends State<ChatScreen> {
 
         // body
         body: Column(
-          children: [_chatInput()],
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                stream: APIs.getAllMessages(),
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    // data is loading
+                    case ConnectionState.waiting:
+                    case ConnectionState.none:
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+
+                    // if some or all data is loaded then show it
+                    case ConnectionState.active:
+                    case ConnectionState.done:
+                      final data = snapshot.data?.docs;
+                      log('Data: ${jsonEncode(data![0].data())}');
+                      // list = data
+                      //         ?.map((e) => ChatUser.fromJson(e.data()))
+                      //         .toList() ??
+                      //     [];
+
+                      final _list = ['hiii', 'hello'];
+
+                      if (_list.isNotEmpty) {
+                        return ListView.builder(
+                            itemCount: _list.length,
+                            padding: EdgeInsets.only(top: mq.height * .01),
+                            physics: BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return Text('Name: ${_list[index]}');
+                            });
+                      } else {
+                        return Center(
+                          child: Text(
+                            "Say Hi! 👋🏾",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        );
+                      }
+                  }
+                },
+              ),
+            ),
+            _chatInput()
+          ],
         ),
       ),
     );

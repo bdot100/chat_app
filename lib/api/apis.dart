@@ -58,7 +58,7 @@ class APIs {
         .set(chatUser.toJson());
   }
 
-// for getting all users from firestore databases
+  // for getting all users from firestore databases
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
     return APIs.firestore
         .collection('users')
@@ -95,5 +95,12 @@ class APIs {
         .collection('users')
         .doc(user.uid)
         .update({'image': me.image});
+  }
+
+  ///******************** Chat Screen Related APIs ********************
+
+  // for getting all messages of a specific conversation from firestore databases
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages() {
+    return APIs.firestore.collection('messages').snapshots();
   }
 }
