@@ -1,18 +1,10 @@
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/api/apis.dart';
-import 'package:chat_app/helper/dialogs.dart';
 import 'package:chat_app/helper/my_date_util.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/screens/auth/login_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:image_picker/image_picker.dart';
 
 // view profile screen -- to view profile of user
 class ViewProfileScreen extends StatefulWidget {
