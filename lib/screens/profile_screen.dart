@@ -7,6 +7,7 @@ import 'package:chat_app/helper/dialogs.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/screens/auth/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -36,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: Text('Profile Screen'),
           ),
 
-          // floating button to add new users
+          // floating button to log out
           floatingActionButton: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: FloatingActionButton.extended(
@@ -45,6 +46,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // show progress dialog
                 Dialogs.showProgressBar(context);
 
+                // set active status to false
+                await APIs.updateActiveStatus(false);
+
                 // sign out from app
                 await APIs.auth.signOut().then((value) async {
                   await GoogleSignIn().signOut().then((value) {
@@ -52,6 +56,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.pop(context);
                     // remove homescreen
                     Navigator.pop(context);
+
+                    APIs.auth = FirebaseAuth.instance;
+
+                    // replacing home screen with login screen
                     Navigator.pushReplacement(context,
                         MaterialPageRoute(builder: (_) => LoginScreen()));
                   });
