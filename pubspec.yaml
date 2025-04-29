@@ -38,6 +38,7 @@ dependencies:
   firebase_storage: ^12.4.5
   # for showing emojis on our keyboard
   emoji_picker_flutter: ^4.3.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
