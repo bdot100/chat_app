@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ignore service account json
+/assets/files/chat-app-6c0b0-f451c630a915.json
