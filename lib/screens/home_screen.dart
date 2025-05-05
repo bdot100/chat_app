@@ -30,13 +30,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    APIs.getSelfInfo();
-    // for setting user status to active
-    APIs.updateActiveStatus(true);
+    _init();
+  }
 
-    // for updating user active status according to lifecycle events
-    // resume -- active or online
-    // pause -- inactive or offline
+  Future<void> _init() async {
+    await APIs.getSelfInfo();
+
+    // Now it's safe to use APIs.me
     SystemChannels.lifecycle.setMessageHandler((message) {
       log('Message: $message');
 
