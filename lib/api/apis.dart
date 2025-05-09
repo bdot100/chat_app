@@ -86,6 +86,30 @@ class APIs {
     return (await firestore.collection('users').doc(user.uid).get()).exists;
   }
 
+  // for adding a new chat user to our conversation
+  static Future<bool> addChatUser(String email) async {
+    final data = await firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    log('data: ${data.docs}');
+
+    if (data.docs.isNotEmpty && data.docs.first.id != user.uid) {
+      await firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('my_users')
+          .doc(data.docs.first.id)
+          .set({});
+      // print('------------------------------true-----------------------------');
+      return true;
+    } else {
+      print('------------------------------false-----------------------------');
+      return false;
+    }
+  }
+
   // for getting current user info
   static Future<void> getSelfInfo() async {
     await firestore.collection('users').doc(user.uid).get().then((user) async {
@@ -121,12 +145,33 @@ class APIs {
         .set(chatUser.toJson());
   }
 
-  // for getting all users from firestore databases
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
-    return APIs.firestore
+  // for getting ids of known users from firestore database
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUsersId() {
+    return firestore
         .collection('users')
-        .where('id', isNotEqualTo: user.uid)
+        .doc(user.uid)
+        .collection('my_users')
         .snapshots();
+  }
+
+  // for getting all users from firestore databases
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(
+      List<String> userIds) {
+    return firestore
+        .collection('users')
+        .where('id', whereIn: userIds)
+        .snapshots();
+  }
+
+  // for adding a user to my user collection when first message is sent
+  static Future<void> sendFirstMessage(
+      ChatUser chatUser, String msg, Type type) async {
+    await firestore
+        .collection('users')
+        .doc(chatUser.id)
+        .collection('my_users')
+        .doc(user.uid)
+        .set({}).then((value) => sendMessage(chatUser, msg, type));
   }
 
   // for updating user information

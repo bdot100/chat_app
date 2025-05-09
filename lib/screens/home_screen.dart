@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:chat_app/api/apis.dart';
+import 'package:chat_app/helper/dialogs.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/screens/profile_screen.dart';
@@ -8,7 +9,6 @@ import 'package:chat_app/widgets/chat_user_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // for storing all users
-  List<ChatUser> list = [];
+  List<ChatUser> _list = [];
 
   // for storing searched items
   final List<ChatUser> _searchList = [];
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // search logic
                       _searchList.clear();
 
-                      for (var i in list) {
+                      for (var i in _list) {
                         if (i.name
                                 .toLowerCase()
                                 .contains(value.toLowerCase()) ||
@@ -131,53 +131,71 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(bottom: 10),
             child: FloatingActionButton(
               onPressed: () async {
-                await APIs.auth.signOut();
-                await GoogleSignIn().signOut();
+                _chatUserDialog(context);
               },
               child: Icon(Icons.add_comment_rounded),
             ),
           ),
 
+          // body
           body: StreamBuilder(
-            stream: APIs.getAllUsers(),
+            stream: APIs.getMyUsersId(),
+
+            //get id of only known users
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
-                // data is loading
+                //if data is loading
                 case ConnectionState.waiting:
                 case ConnectionState.none:
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
 
-                // if some or all data is loaded then show it
+                //if some or all data is loaded then show it
                 case ConnectionState.active:
                 case ConnectionState.done:
-                  final data = snapshot.data?.docs;
-                  list =
-                      data?.map((e) => ChatUser.fromJson(e.data())).toList() ??
-                          [];
+                  return StreamBuilder(
+                    stream: APIs.getAllUsers(
+                        snapshot.data?.docs.map((e) => e.id).toList() ?? []),
 
-                  if (list.isNotEmpty) {
-                    return ListView.builder(
-                        itemCount:
-                            _isSearching ? _searchList.length : list.length,
-                        padding: EdgeInsets.only(top: mq.height * .01),
-                        physics: BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return ChatUserCard(
-                            user:
-                                _isSearching ? _searchList[index] : list[index],
-                          );
-                          // return Text('Name: ${list[index]}');
-                        });
-                  } else {
-                    return Center(
-                      child: Text(
-                        "No connection found",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    );
-                  }
+                    //get only those user, who's ids are provided
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        //if data is loading
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                        // return const Center(
+                        //     child: CircularProgressIndicator());
+
+                        //if some or all data is loaded then show it
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          final data = snapshot.data?.docs;
+                          _list = data
+                                  ?.map((e) => ChatUser.fromJson(e.data()))
+                                  .toList() ??
+                              [];
+
+                          if (_list.isNotEmpty) {
+                            return ListView.builder(
+                                itemCount: _isSearching
+                                    ? _searchList.length
+                                    : _list.length,
+                                padding: EdgeInsets.only(top: mq.height * .01),
+                                physics: const BouncingScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return ChatUserCard(
+                                      user: _isSearching
+                                          ? _searchList[index]
+                                          : _list[index]);
+                                });
+                          } else {
+                            return const Center(
+                              child: Text('No Connections Found!',
+                                  style: TextStyle(fontSize: 20)),
+                            );
+                          }
+                      }
+                    },
+                  );
               }
             },
           ),
@@ -185,4 +203,76 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+// for adding chat user
+void _chatUserDialog(dynamic context) {
+  String email = '';
+
+  showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+            contentPadding:
+                EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 10),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.person_add,
+                  color: Colors.blue,
+                  size: 28,
+                ),
+                Text('  Add User')
+              ],
+            ),
+
+            //content
+            content: TextFormField(
+              initialValue: email,
+              maxLines: null,
+              onChanged: (value) => email = value,
+              decoration: InputDecoration(
+                  hintText: 'Email Id',
+                  prefixIcon: Icon(
+                    Icons.email,
+                    color: Colors.blue,
+                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15))),
+            ),
+
+            //actions
+            actions: [
+              // cancel button
+              MaterialButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
+                ),
+              ),
+              // add button
+              MaterialButton(
+                onPressed: () {
+                  //hide alert dialog
+                  Navigator.pop(context);
+
+                  if (email.isNotEmpty) {
+                    APIs.addChatUser(email).then((value) {
+                      if (!value) {
+                        Dialogs.showSnackbar(context, 'User does not exist!');
+                      }
+                    });
+                  }
+                },
+                child: Text(
+                  'Add',
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
+                ),
+              ),
+            ],
+          ));
 }
