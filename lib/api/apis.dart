@@ -255,4 +255,23 @@ class APIs {
 
     sendMessage(chatUser, imageUrl, Type.image);
   }
+
+  // delete message
+  static Future<void> deleteMessage(Message message) async {
+    firestore
+        .collection('chats/${getConversationID(message.toId)}/messages/')
+        .doc(message.sent)
+        .delete();
+
+    if (message.type == Type.image)
+      await storage.refFromURL(message.msg).delete();
+  }
+
+  // update message
+  static Future<void> updateMessage(Message message, String updateMsg) async {
+    await firestore
+        .collection('chats/${getConversationID(message.toId)}/messages/')
+        .doc(message.sent)
+        .update({'msg': updateMsg});
+  }
 }

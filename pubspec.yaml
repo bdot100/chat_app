@@ -48,6 +48,10 @@ dependencies:
   googleapis_auth: ^2.0.0
   # for creating notification channel
   flutter_notification_channel: ^3.1.1
+  # for storing images into gallery
+  saver_gallery: ^4.0.1
+  # A powerful HTTP networking package, supports Interceptors, Aborting and canceling a request,
+  dio: ^5.8.0+1
 
 dev_dependencies:
   flutter_test:
