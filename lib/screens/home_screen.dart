@@ -153,11 +153,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 case ConnectionState.active:
                 case ConnectionState.done:
                   return StreamBuilder(
-                    stream: APIs.getAllUsers(
-                        snapshot.data?.docs.map((e) => e.id).toList() ?? []),
+                    stream: snapshot.data?.docs.isNotEmpty == true
+                        ? APIs.getAllUsers(
+                            snapshot.data!.docs.map((e) => e.id).toList())
+                        : Stream.value(null),
 
                     //get only those user, who's ids are provided
                     builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        return const Center(
+                            child: Text('No Connections Found!'));
+                      }
                       switch (snapshot.connectionState) {
                         //if data is loading
                         case ConnectionState.waiting:

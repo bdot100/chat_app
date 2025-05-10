@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 class APIs {
   // for authentication
@@ -28,6 +29,20 @@ class APIs {
   // for getting firebase messaging token
   static Future<void> getFirebaseMessagingToken() async {
     NotificationSettings settings = await fMessaging.requestPermission();
+    log('Notification permission status: ${settings.authorizationStatus}');
+
+    // Handle iOS-specific APNS token
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      // Wait for APNS token to be available
+      final apnsToken = await fMessaging.getAPNSToken();
+      if (apnsToken == null) {
+        log('APNS token not available yet - listening for updates');
+        fMessaging.onTokenRefresh.listen((newToken) async {
+          me.pushToken = newToken;
+        });
+        return;
+      }
+    }
 
     await fMessaging.getToken().then((t) {
       if (t != null) {
